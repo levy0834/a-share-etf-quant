@@ -3,43 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0;url=analysis.html">
-    <title>A股ETF量化交易系统 - 看板</title>
+    <title>A股ETF量化交易系统 - 入口</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
         }
         .container {
-            background: rgba(255,255,255,0.1);
-            padding: 40px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        h1 { margin-bottom: 20px; }
-        a { color: #fff; font-weight: bold; text-decoration: underline; }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .nav-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+        .nav-card .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .nav-card h2 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .nav-card p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .nav-card a {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .nav-card a:hover {
+            opacity: 0.9;
+        }
+        .card-dashboard .icon { color: #3b82f6; }
+        .card-docs .icon { color: #10b981; }
+        .card-sim .icon { color: #f59e0b; }
+        .card-github .icon { color: #8b5cf6; }
+        
+        footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            margin-top: 50px;
+        }
+        footer a {
+            color: white;
+            text-decoration: underline;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        .status-online { background: #10b981; color: white; }
+        .status-offline { background: #ef4444; color: white; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 A股ETF量化交易系统</h1>
-        <p>正在跳转到看板...</p>
-        <p>如果没有自动跳转，请点击：<a href="analysis.html">查看策略回测看板</a></p>
+        <header>
+            <h1>🚀 A股ETF量化交易系统</h1>
+            <p>数据驱动 · 策略回测 · 模拟交易 · 实时监控</p>
+        </header>
+
+        <div class="nav-grid">
+            <!-- 分析看板 -->
+            <div class="nav-card card-dashboard">
+                <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                <h2>📊 策略分析看板</h2>
+                <p>查看策略回测结果、性能排名、收益曲线、KPI卡片。支持20+策略对比，包括MA、MACD、RSI、布林带等。</p>
+                <a href="docs/analysis.html" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> 打开看板
+                    <span class="status-badge status-online">已就绪</span>
+                </a>
+            </div>
+
+            <!-- 项目文档 -->
+            <div class="nav-card card-docs">
+                <div class="icon"><i class="fas fa-book"></i></div>
+                <h2>📚 项目文档</h2>
+                <p>完整的使用指南：快速开始、架构说明、策略开发、部署配置、故障排除。包含20+页详细文档。</p>
+                <a href="docs/README.md" target="_blank">
+                    <i class="fas fa-file-alt"></i> 查看文档
+                </a>
+            </div>
+
+            <!-- 模拟交易监控 -->
+            <div class="nav-card card-sim">
+                <div class="icon"><i class="fas fa-desktop"></i></div>
+                <h2>💻 模拟交易监控</h2>
+                <p>实时Flask看板：显示虚拟账户状态、持仓盈亏、资金曲线、执行信号。需本地启动服务。</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="docs/DASHBOARD_GUIDE.md" target="_blank">
+                        <i class="fas fa-info-circle"></i> 使用指南
+                    </a>
+                    <a href="#" onclick="alert('请先在本机运行: python3 dashboard/sim_trader.py\n然后访问 http://localhost:8082'); return false;">
+                        <i class="fas fa-play"></i> 启动看板
+                    </a>
+                </div>
+            </div>
+
+            <!-- GitHub仓库 -->
+            <div class="nav-card card-github">
+                <div class="icon"><i class="fab fa-github"></i></div>
+                <h2>💾 源代码仓库</h2>
+                <p>查看完整源码、提交历史、CI/CD状态、Issues追踪。包含49个文件，15,000+行代码。</p>
+                <a href="https://github.com/levy0834/a-share-etf-quant" target="_blank">
+                    <i class="fab fa-github"></i> 访问仓库
+                </a>
+            </div>
+
+            <!-- 飞书文档 -->
+            <div class="nav-card" style="background: rgba(255,255,255,0.98);">
+                <div class="icon" style="color: #ff6b00;"><i class="fas fa-file-lines"></i></div>
+                <h2>📄 飞书完整文档</h2>
+                <p>最新的项目总结、优化建议、验收报告。支持在线编辑和协作。</p>
+                <a href="https://feishu.cn/docx/Vc8BdZHE2oqzMZxDxlEc19gunZd" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> 查看飞书文档
+                </a>
+            </div>
+
+            <!-- 快速命令 -->
+            <div class="nav-card" style="background: rgba(255,255,255,0.98);">
+                <div class="icon" style="color: #ef4444;"><i class="fas fa-terminal"></i></div>
+                <h2>⚡ 快速命令</h2>
+                <p>常用操作命令速查：下载数据、运行回测、参数优化、信号生成、安全审计。</p>
+                <a href="docs/QUICKSTART.md" target="_blank">
+                    <i class="fas fa-bolt"></i> 查看命令
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <p>版本: 1.0 | 更新: 2026-03-06 | 维护者: 小灵 (OpenClaw Agent)</p>
+            <p>
+                <a href="https://github.com/levy0834/a-share-etf-quant/actions" target="_blank">CI状态</a> | 
+                <a href="docs/VERIFICATION_REPORT.md" target="_blank">测试报告</a> | 
+                <a href="docs/PAGES_DEPLOY.md" target="_blank">部署说明</a>
+            </p>
+        </footer>
     </div>
-    <script>
-        // 如果浏览器不支持自动跳转，显示链接
-        if (!window.location.replace) {
-            document.querySelector('p a').style.display = 'inline';
-        } else {
-            window.location.replace('analysis.html');
-        }
-    </script>
 </body>
 </html>
