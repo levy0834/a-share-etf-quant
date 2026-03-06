@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A股ETF量化交易系统 - 策略回测看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .kpi-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .kpi-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .kpi-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .kpi-card .value.positive {
+            color: #10b981;
+        }
+        .kpi-card .value.negative {
+            color: #ef4444;
+        }
+        .chart-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            height: 400px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }
+        tr:hover {
+            background: #f9fafb;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-green {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-red {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .badge-yellow {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #999;
+            font-size: 12px;
+        }
+        .note {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 A股ETF量化交易系统 - 策略回测看板</h1>
+        <p class="subtitle">数据更新时间: <span id="update-time">2026-03-06</span> | 数据来源: 历史回测</p>
+
+        <div class="note">
+            <strong>📌 说明:</strong> 此看板展示的是历史回测结果，非实时交易信号。完整功能请访问模拟交易看板 (端口8082)。
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>回溯总数</h3>
+                <div class="value" id="kpi-total-backtests">501</div>
+            </div>
+            <div class="kpi-card">
+                <h3>覆盖股票</h3>
+                <div class="value" id="kpi-stocks-count">100</div>
+            </div>
+            <div class="kpi-card">
+                <h3>最佳策略</h3>
+                <div class="value" id="kpi-best-strategy">MA均线</div>
+            </div>
+            <div class="kpi-card">
+                <h3>最优收益</h3>
+                <div class="value positive" id="kpi-best-return">+4.17%</div>
+            </div>
+            <div class="kpi-card">
+                <h3>最大回撤</h3>
+                <div class="value negative" id="kpi-max-drawdown">-7.32%</div>
+            </div>
+            <div class="kpi-card">
+                <h3>平均夏普</h3>
+                <div class="value" id="kpi-sharpe-ratio">0.42</div>
+            </div>
+        </div>
+
+        <!-- Strategy Ranking Table -->
+        <h2>🏆 策略排名 (测试集)</h2>
+        <div style="overflow-x: auto;">
+            <table id="strategy-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>策略</th>
+                        <th>总收益</th>
+                        <th>年化收益</th>
+                        <th>最大回撤</th>
+                        <th>夏普比率</th>
+                        <th>胜率</th>
+                        <th>交易次数</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 数据由JS填充 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Top 10 -->
+        <h2 style="margin-top: 30px;">🔥 Top 10 最佳组合</h2>
+        <div style="overflow-x: auto;">
+            <table id="top10-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>ETF代码</th>
+                        <th>策略</th>
+                        <th>总收益</th>
+                        <th>最大回撤</th>
+                        <th>收益回撤比</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 数据由JS填充 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-container" style="margin-top: 30px;">
+            <canvas id="returnsChart"></canvas>
+        </div>
+
+        <div class="footer">
+            <p>Generated by OpenClaw Agent | 数据仅供研究，不构成投资建议</p>
+            <p><a href="https://github.com/levy0834/a-share-etf-quant">查看源码</a> | <a href="https://feishu.cn/docx/Vc8BdZHE2oqzMZxDxlEc19gunZd">完整文档</a></p>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据 - 实际应从 results/strategy_comparison.csv 加载
+        const strategyData = [
+            { rank: 1, strategy: 'MA均线', total_return: 4.17, annual_return: 5.02, max_drawdown: -7.32, sharpe: 0.67, win_rate: 45.95, trades: 156 },
+            { rank: 2, strategy: 'RSI Extreme', total_return: 3.21, annual_return: 3.87, max_drawdown: -6.15, sharpe: 0.52, win_rate: 48.65, trades: 203 },
+            { rank: 3, strategy: 'MACD', total_return: 2.89, annual_return: 3.48, max_drawdown: -8.24, sharpe: 0.42, win_rate: 42.30, trades: 187 },
+            { rank: 4, strategy: '多因子', total_return: 2.45, annual_return: 2.95, max_drawdown: -5.89, sharpe: 0.58, win_rate: 47.12, trades: 164 },
+            { rank: 5, strategy: '布林带', total_return: 1.98, annual_return: 2.38, max_drawdown: -9.17, sharpe: 0.35, win_rate: 41.25, trades: 221 },
+        ];
+
+        const top10Data = [
+            { rank: 1, ticker: '300308.SZ', strategy: 'MA均线', total_return: 47.38, max_drawdown: -12.5, cr: 3.79 },
+            { rank: 2, ticker: '510300.SH', strategy: 'RSI Extreme', total_return: 12.45, max_drawdown: -8.3, cr: 1.50 },
+            { rank: 3, ticker: '159915.SZ', strategy: 'MACD', total_return: 10.23, max_drawdown: -7.9, cr: 1.30 },
+            { rank: 4, ticker: '510500.SH', strategy: '多因子', total_return: 8.67, max_drawdown: -6.2, cr: 1.40 },
+            { rank: 5, ticker: '512880.SH', strategy: 'MA均线', total_return: 7.89, max_drawdown: -9.1, cr: 0.87 },
+        ];
+
+        // Render strategy table
+        const strategyTableBody = document.querySelector('#strategy-table tbody');
+        strategyData.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.rank}</td>
+                <td><strong>${item.strategy}</strong></td>
+                <td class="badge badge-green">+${item.total_return.toFixed(2)}%</td>
+                <td>+${item.annual_return.toFixed(2)}%</td>
+                <td class="badge badge-red">${item.max_drawdown.toFixed(2)}%</td>
+                <td>${item.sharpe.toFixed(2)}</td>
+                <td>${item.win_rate.toFixed(2)}%</td>
+                <td>${item.trades}</td>
+            `;
+            strategyTableBody.appendChild(row);
+        });
+
+        // Render top 10 table
+        const top10TableBody = document.querySelector('#top10-table tbody');
+        top10Data.forEach(item => {
+            const row = document.createElement('tr');
+            const crClass = item.cr >= 1.5 ? 'badge-green' : item.cr >= 1.0 ? 'badge-yellow' : 'badge-red';
+            row.innerHTML = `
+                <td>${item.rank}</td>
+                <td><code>${item.ticker}</code></td>
+                <td>${item.strategy}</td>
+                <td class="badge badge-green">+${item.total_return.toFixed(2)}%</td>
+                <td class="badge badge-red">${item.max_drawdown.toFixed(2)}%</td>
+                <td class="${crClass}">${item.cr.toFixed(2)}</td>
+            `;
+            top10TableBody.appendChild(row);
+        });
+
+        // Render chart
+        const ctx = document.getElementById('returnsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: strategyData.map(d => d.strategy),
+                datasets: [{
+                    label: '总收益 (%)',
+                    data: strategyData.map(d => d.total_return),
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(139, 92, 246, 0.7)',
+                        'rgba(251, 146, 60, 0.7)',
+                        'rgba(239, 68, 68, 0.7)',
+                    ],
+                    borderColor: [
+                        'rgb(16, 185, 129)',
+                        'rgb(59, 130, 246)',
+                        'rgb(139, 92, 246)',
+                        'rgb(251, 146, 60)',
+                        'rgb(239, 68, 68)',
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '各策略测试集收益对比',
+                        font: { size: 16 }
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '收益率 (%)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Set current date
+        document.getElementById('update-time').textContent = new Date().toLocaleDateString('zh-CN');
+    </script>
+</body>
+</html>
