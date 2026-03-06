@@ -109,8 +109,8 @@
     <nav class="navbar">
         <h1>📊 策略分析看板</h1>
         <div>
-            <a href="/a-share-etf-quant/"><i class="icon">🏠</i> 首页</a>
-            <a href="/a-share-etf-quant/docs/README.md" target="_blank"><i class="icon">📚</i> 文档</a>
+            <a href="index.html"><i class="icon">🏠</i> 首页</a>
+            <a href="README.md" target="_blank"><i class="icon">📚</i> 文档</a>
             <a href="https://github.com/levy0834/a-share-etf-quant" target="_blank"><i class="icon">💾</i> GitHub</a>
         </div>
     </nav>
@@ -317,15 +317,17 @@
         </p>
     </div>
 
-    <!-- Chart.js库 - 优先使用本地副本，确保稳定 -->
-    <script src="../scripts/lib/chart.min.js"></script>
+    <!-- Chart.js库 - 使用本地副本（确保GitHub Pages可访问） -->
+    <script src="chart.min.js"></script>
     <script>
-        // 如果本地文件加载失败，尝试CDN作为fallback
+        // 如果本地Chart.js加载失败，提示用户
         if (typeof Chart === 'undefined') {
-            console.warn('本地Chart.js未找到或加载失败，尝试CDN...');
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
-            document.head.appendChild(script);
+            console.error('Chart.js加载失败！');
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.chart-container').forEach(c => {
+                    c.innerHTML = '<p style="text-align:center; padding:50px; color:#ef4444;">图表库加载失败，请刷新页面重试</p>';
+                });
+            });
         }
         // Tab switching
         function switchTab(tabId) {
@@ -660,9 +662,23 @@
 
         // Start rendering when DOM is ready and Chart.js is available
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, waiting for Chart.js...');
-            waitForChart(renderCharts);
+            console.log('DOM loaded, Chart.js status:', typeof Chart);
+            if (typeof Chart !== 'undefined') {
+                renderCharts();
+            } else {
+                console.warn('Chart.js not available, charts will not render');
+            }
         });
     </script>
+
+    <!-- Footer -->
+    <footer style="text-align: center; color: #666; font-size: 12px; margin-top: 50px; padding: 20px; border-top: 1px solid #e5e7eb;">
+        <p>版本: 1.0 | 更新: 2026-03-06 | 维护者: 小灵 (OpenClaw Agent)</p>
+        <p>
+            <a href="https://github.com/levy0834/a-share-etf-quant/actions" target="_blank">CI状态</a> | 
+            <a href="VERIFICATION_REPORT.md" target="_blank">测试报告</a> | 
+            <a href="PAGES_DEPLOY.md" target="_blank">部署说明</a>
+        </p>
+    </footer>
 </body>
 </html>

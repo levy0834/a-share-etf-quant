@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A股ETF量化交易系统 - 入口</title>
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -112,67 +111,66 @@
         <div class="nav-grid">
             <!-- 分析看板 -->
             <div class="nav-card card-dashboard">
-                <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="icon">📊</div>
                 <h2>📊 策略分析看板</h2>
                 <p>查看策略回测结果、性能排名、收益曲线、KPI卡片。支持20+策略对比，包括MA、MACD、RSI、布林带等。</p>
                 <a href="analysis.html" target="_blank">
-                    <i class="fas fa-external-link-alt"></i> 打开看板
-                    <span class="status-badge status-online">已就绪</span>
+                    打开看板 <span class="status-badge status-online">已就绪</span>
                 </a>
             </div>
 
             <!-- 项目文档 -->
             <div class="nav-card card-docs">
-                <div class="icon"><i class="fas fa-book"></i></div>
+                <div class="icon">📚</div>
                 <h2>📚 项目文档</h2>
                 <p>完整的使用指南：快速开始、架构说明、策略开发、部署配置、故障排除。包含20+页详细文档。</p>
                 <a href="README.md" target="_blank">
-                    <i class="fas fa-file-alt"></i> 查看文档
+                    查看文档
                 </a>
             </div>
 
             <!-- 模拟交易监控 -->
             <div class="nav-card card-sim">
-                <div class="icon"><i class="fas fa-desktop"></i></div>
+                <div class="icon">💻</div>
                 <h2>💻 模拟交易监控</h2>
                 <p>实时Flask看板：显示虚拟账户状态、持仓盈亏、资金曲线、执行信号。需本地启动服务。</p>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <a href="DASHBOARD_GUIDE.md" target="_blank">
-                        <i class="fas fa-info-circle"></i> 使用指南
+                    <a href="sim_trader.py" target="_blank" style="background: #6b7280;">
+                        查看源代码
                     </a>
-                    <a href="#" onclick="alert('请先在本机运行: python3 dashboard/sim_trader.py\n然后访问 http://localhost:8082'); return false;">
-                        <i class="fas fa-play"></i> 启动看板
+                    <a href="#" onclick="alert('请先在本机运行: python3 dashboard/sim_trader.py\n然后访问 http://localhost:8082'); return false;" style="background: #059669;">
+                        启动看板
                     </a>
                 </div>
             </div>
 
             <!-- GitHub仓库 -->
             <div class="nav-card card-github">
-                <div class="icon"><i class="fab fa-github"></i></div>
+                <div class="icon">💾</div>
                 <h2>💾 源代码仓库</h2>
                 <p>查看完整源码、提交历史、CI/CD状态、Issues追踪。包含49个文件，15,000+行代码。</p>
                 <a href="https://github.com/levy0834/a-share-etf-quant" target="_blank">
-                    <i class="fab fa-github"></i> 访问仓库
+                    访问仓库
                 </a>
             </div>
 
-            <!-- 飞书文档 -->
+            <!-- 策略指南 -->
             <div class="nav-card" style="background: rgba(255,255,255,0.98);">
-                <div class="icon" style="color: #ff6b00;"><i class="fas fa-file-lines"></i></div>
-                <h2>📄 飞书完整文档</h2>
-                <p>最新的项目总结、优化建议、验收报告。支持在线编辑和协作。</p>
-                <a href="https://feishu.cn/docx/Vc8BdZHE2oqzMZxDxlEc19gunZd" target="_blank">
-                    <i class="fas fa-external-link-alt"></i> 查看飞书文档
+                <div class="icon" style="color: #ff6b00;">📖</div>
+                <h2>📖 策略开发指南</h2>
+                <p>详细的策略编写教程：指标计算、信号生成、回测评估、参数优化。包含8种内置策略源码分析。</p>
+                <a href="strategy_guide.md" target="_blank">
+                    开始学习
                 </a>
             </div>
 
-            <!-- 快速命令 -->
+            <!-- 部署说明 -->
             <div class="nav-card" style="background: rgba(255,255,255,0.98);">
-                <div class="icon" style="color: #ef4444;"><i class="fas fa-terminal"></i></div>
-                <h2>⚡ 快速命令</h2>
-                <p>常用操作命令速查：下载数据、运行回测、参数优化、信号生成、安全审计。</p>
-                <a href="docs/QUICKSTART.md" target="_blank">
-                    <i class="fas fa-bolt"></i> 查看命令
+                <div class="icon" style="color: #0891b2;">🚀</div>
+                <h2>🚀 GitHub Pages 部署</h2>
+                <p>如何将分析看板部署到GitHub Pages，配置自动更新，自定义域名等完整步骤。</p>
+                <a href="PAGES_DEPLOY.md" target="_blank">
+                    部署教程
                 </a>
             </div>
         </div>
@@ -181,8 +179,7 @@
             <p>版本: 1.0 | 更新: 2026-03-06 | 维护者: 小灵 (OpenClaw Agent)</p>
             <p>
                 <a href="https://github.com/levy0834/a-share-etf-quant/actions" target="_blank">CI状态</a> | 
-                <a href="VERIFICATION_REPORT.md" target="_blank">测试报告</a> | 
-                <a href="PAGES_DEPLOY.md" target="_blank">部署说明</a>
+                <a href="VERIFICATION_REPORT.md" target="_blank">测试报告</a>
             </p>
         </footer>
     </div>
