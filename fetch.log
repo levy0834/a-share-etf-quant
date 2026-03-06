@@ -1,0 +1,6 @@
+============================================================
+📊 A股ETF历史数据抓取任务
+============================================================
+📥 正在获取ETF列表...
+❌ 获取ETF列表失败: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+❌ 无法获取ETF列表，退出

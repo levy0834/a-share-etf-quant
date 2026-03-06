@@ -1,0 +1,87 @@
+name: Daily ETF Data Update
+
+on:
+  schedule:
+    # 工作日 16:00 运行（北京时间）
+    # cron 格式: 分 时 日 月 星期 (UTC时间)
+    # 北京时间16:00 = UTC 08:00
+    - cron: '0 8 * * 1-5'
+  workflow_dispatch:  # 允许手动触发
+    inputs:
+      force:
+        description: 'Force full download'
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: 'Dry run (check only)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  daily-update:
+    runs-on: ubuntu-latest
+    
+    env:
+      # 飞书webhook URL（可选，用于失败通知）
+      # 在仓库 Settings -> Secrets and variables -> Actions 中配置
+      FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+      # Python版本
+      PYTHON_VERSION: '3.11'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install akshare pandas tqdm requests
+      timeout-minutes: 10
+    
+    - name: Create necessary directories
+      run: |
+        mkdir -p data/day logs
+    
+    - name: Run daily update
+      run: |
+        cd projects/a-share-etf-quant/scripts
+        
+        # 构建参数
+        ARGS=""
+        if "${{ github.event.inputs.force == 'true' }}"; then
+          ARGS="--force"
+        fi
+        if "${{ github.event.inputs.dry_run == 'true' }}"; then
+          ARGS="--dry-run"
+        fi
+        
+        python daily_update.py $ARGS
+      
+        # 可选：上传日志文件作为artifact（便于调试）
+      continue-on-error: false  # 失败时标记整个job失败
+    
+    - name: Upload logs
+      if: always()  # 无论成功失败都上传日志
+      uses: actions/upload-artifact@v4
+      with:
+        name: update-logs-${{ github.run_number }}
+        path: |
+          projects/a-share-etf-quant/logs/*.log
+          projects/a-share-etf-quant/data/latest_date.txt
+        retention-days: 7
+    
+    - name: Notify failure (optional)
+      if: failure() && env.FEISHU_WEBHOOK_URL != ''
+      run: |
+        # 失败时会自动发送飞书通知（脚本内已实现）
+        # 这里可以添加额外的通知
+        echo "更新失败，已通过飞书通知"
+      shell: bash

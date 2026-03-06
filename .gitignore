@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.pytest_cache/
+hypothesis/
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project specific
+data/day/*.csv
+data/etf_metadata.csv
+data/accounts/
+data/raw/*.csv
+results/
+signals/
+logs/
+**/logs/
+**/log/
+accounts/
+monitoring/alerts_sent.json
+security/audit_report_*.txt
+dashboard/logs/
+quick_start_mock.py
+__pycache__/
+*.pyc
+.DS_Store
+
+# Credentials & Secrets
+.env
+.env.*
+credentials.json
+secrets/
+*.pem
+*.key
+*.secret
+*_secret
+*_key
+*_token
+*_password
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+*.sublime-project
+*.sublime-workspace
+
+# Testing
+test_data/
+.pytest_cache

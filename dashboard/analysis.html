@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A股ETF量化策略分析看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .kpi-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-3px);
+        }
+        .kpi-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        .kpi-card .label {
+            font-size: 13px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #444;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .ranking-table th {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .ranking-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .ranking-table tr:hover {
+            background: #f8f9ff;
+        }
+        .rank-badge {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #A9A9A9); }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); }
+        .metric-positive { color: #10b981; }
+        .metric-negative { color: #ef4444; }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+        .strategy-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .strategy-card {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 18px;
+            border: 1px solid #e5e7ff;
+        }
+        .strategy-card h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #667eea;
+        }
+        .strategy-card .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .strategy-card .metric-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .strategy-card .metric-label {
+            color: #666;
+        }
+        .strategy-card .metric-value {
+            font-weight: 600;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+        }
+        @media (max-width: 768px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .section { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 A股ETF量化策略分析看板</h1>
+            <p>数据来源: 沪深300ETF (510300) 2015-2025年历史数据 | 初始资金: 100,000元 | 风控: 单仓10%, 止损-3%, 止盈+8%</p>
+        </div>
+
+        <!-- KPI 概览 -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="label">最佳策略</div>
+                <div class="value" id="best-strategy">--</div>
+                <div style="font-size:12px;color:#888;" id="best-strategy-return">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">最高收益</div>
+                <div class="value metric-positive" id="max-return">--%</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">最低回撤</div>
+                <div class="value" id="min-drawdown">--%</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">最佳夏普</div>
+                <div class="value" id="best-sharpe">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">测试策略数</div>
+                <div class="value" id="strategy-count">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">回测区间</div>
+                <div class="value" style="font-size: 18px;" id="backtest-period">--</div>
+            </div>
+        </div>
+
+        <!-- 策略排名 -->
+        <div class="section">
+            <h2>🏆 策略排名（按总收益）</h2>
+            <table class="ranking-table" id="ranking-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>策略名称</th>
+                        <th>总收益</th>
+                        <th>年化收益</th>
+                        <th>最大回撤</th>
+                        <th>夏普比率</th>
+                        <th>胜率</th>
+                        <th>交易次数</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-body">
+                    <tr><td colspan="8" style="text-align:center; padding:30px;">⏳ 正在加载数据...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 资金曲线对比 -->
+        <div class="section">
+            <h2>📈 资金曲线对比（最优策略 vs 基准）</h2>
+            <div class="chart-container">
+                <canvas id="equity-curve-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- 策略详情卡片 -->
+        <div class="section">
+            <h2>📋 策略详细指标</h2>
+            <div class="strategy-details" id="strategy-cards">
+                <div class="loading">⏳ 数据加载中...</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            生成时间: <span id="generated-time">--</span> | 数据路径: results/*.csv | 技术支持: OpenClaw
+        </div>
+    </div>
+
+    <script>
+        // 加载数据
+        async function loadData() {
+            try {
+                const response = await fetch('strategy_comparison.csv?' + new Date().getTime());
+                if (!response.ok) throw new Error('Failed to load CSV');
+                const csvText = await response.text();
+                const lines = csvText.trim().split('\n');
+                const headers = lines[0].split(',');
+                const data = lines.slice(1).map(line => {
+                    const values = line.split(',');
+                    let obj = {};
+                    headers.forEach((h, i) => obj[h.trim()] = values[i] ? parseFloat(values[i]) || values[i] : '');
+                    return obj;
+                });
+
+                // 处理列名映射
+                data.forEach(d => {
+                    d['Strategy'] = d['strategy'] || d['Strategy'] || 'Unknown';
+                    d['Total Return'] = parseFloat(d['total_return']) || 0;
+                    d['Annual Return'] = parseFloat(d['annual_return']) || 0;
+                    d['Max Drawdown'] = parseFloat(d['max_drawdown']) || 0;
+                    d['Sharpe Ratio'] = parseFloat(d['sharpe_ratio']) || 0;
+                    d['Win Rate'] = parseFloat(d['win_rate']) || 0;
+                    d['Total Trades'] = parseInt(d['total_trades']) || 0;
+                    d['Final Assets'] = parseFloat(d['final_assets']) || 0;
+                });
+
+                renderDashboard(data);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.querySelector('.loading').textContent = '❌ 无法加载数据文件，请检查 results/strategy_comparison.csv 是否存在';
+            }
+        }
+
+        function renderDashboard(data) {
+            // 按总收益排序
+            data.sort((a, b) => b['Total Return'] - a['Total Return']);
+
+            // 更新KPI
+            const best = data[0];
+            document.getElementById('best-strategy').textContent = best.Strategy;
+            document.getElementById('best-strategy-return').textContent = `收益: ${best['Total Return'].toFixed(2)}%`;
+            document.getElementById('max-return').textContent = best['Total Return'].toFixed(2) + '%';
+            document.getElementById('min-drawdown').textContent = Math.abs(data.reduce((min, d) => d['Max Drawdown'] < min['Max Drawdown'] ? d : min, data)['Max Drawdown']).toFixed(2) + '%';
+            document.getElementById('best-sharpe').textContent = data.reduce((max, d) => d['Sharpe Ratio'] > max['Sharpe Ratio'] ? d : max, data)['Sharpe Ratio'].toFixed(2);
+            document.getElementById('strategy-count').textContent = data.length;
+            document.getElementById('generated-time').textContent = new Date().toLocaleString('zh-CN');
+
+            // 查找最小回撤策略
+            const minDD = data.reduce((min, d) => d['Max Drawdown'] < min['Max Drawdown'] ? d : min, data);
+            document.getElementById('min-drawdown').textContent = Math.abs(minDD['Max Drawdown']).toFixed(2) + '%';
+
+            // 渲染排名表格
+            const tbody = document.getElementById('ranking-body');
+            tbody.innerHTML = data.map((d, idx) => `
+                <tr>
+                    <td><span class="rank-badge ${idx < 3 ? 'rank-' + (idx+1) : ''}">${idx + 1}</span></td>
+                    <td><strong>${d.Strategy}</strong></td>
+                    <td class="${d['Total Return'] >= 0 ? 'metric-positive' : 'metric-negative'}">${d['Total Return'].toFixed(2)}%</td>
+                    <td>${d['Annual Return'].toFixed(2)}%</td>
+                    <td class="metric-negative">${Math.abs(d['Max Drawdown']).toFixed(2)}%</td>
+                    <td>${d['Sharpe Ratio'].toFixed(2)}</td>
+                    <td>${d['Win Rate'].toFixed(1)}%</td>
+                    <td>${d['Total Trades']}</td>
+                </tr>
+            `).join('');
+
+            // 渲染策略卡片
+            const cardsContainer = document.getElementById('strategy-cards');
+            cardsContainer.innerHTML = data.map(d => `
+                <div class="strategy-card">
+                    <h3>${d.Strategy}</h3>
+                    <div class="metrics">
+                        <div class="metric-item"><span class="metric-label">总收益:</span><span class="metric-value ${d['Total Return']>=0?'metric-positive':'metric-negative'}">${d['Total Return'].toFixed(2)}%</span></div>
+                        <div class="metric-item"><span class="metric-label">年化:</span><span class="metric-value">${d['Annual Return'].toFixed(2)}%</span></div>
+                        <div class="metric-item"><span class="metric-label">最大回撤:</span><span class="metric-value metric-negative">${Math.abs(d['Max Drawdown']).toFixed(2)}%</span></div>
+                        <div class="metric-item"><span class="metric-label">夏普:</span><span class="metric-value">${d['Sharpe Ratio'].toFixed(2)}</span></div>
+                        <div class="metric-item"><span class="metric-label">胜率:</span><span class="metric-value">${d['Win Rate'].toFixed(1)}%</span></div>
+                        <div class="metric-item"><span class="metric-label">交易:</span><span class="metric-value">${d['Total Trades']}次</span></div>
+                        <div class="metric-item"><span class="metric-label">最终资产:</span><span class="metric-value">¥${d['Final Assets'].toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}</span></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

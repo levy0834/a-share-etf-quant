@@ -1,0 +1,89 @@
+/Users/levy/.openclaw/workspace/projects/a-share-etf-quant/scripts/explore_strategies.py:528: UserWarning: Glyph 20803 (\N{CJK UNIFIED IDEOGRAPH-5143}) missing from font(s) DejaVu Sans.
+  plt.savefig(plot_file, dpi=150, bbox_inches='tight')
+/Users/levy/.openclaw/workspace/projects/a-share-etf-quant/scripts/explore_strategies.py:528: UserWarning: Glyph 27979 (\N{CJK UNIFIED IDEOGRAPH-6D4B}) missing from font(s) DejaVu Sans.
+  plt.savefig(plot_file, dpi=150, bbox_inches='tight')
+/Users/levy/.openclaw/workspace/projects/a-share-etf-quant/scripts/explore_strategies.py:528: UserWarning: Glyph 35797 (\N{CJK UNIFIED IDEOGRAPH-8BD5}) missing from font(s) DejaVu Sans.
+  plt.savefig(plot_file, dpi=150, bbox_inches='tight')
+/Users/levy/.openclaw/workspace/projects/a-share-etf-quant/scripts/explore_strategies.py:528: UserWarning: Glyph 38598 (\N{CJK UNIFIED IDEOGRAPH-96C6}) missing from font(s) DejaVu Sans.
+  plt.savefig(plot_file, dpi=150, bbox_inches='tight')
+/Users/levy/.openclaw/workspace/projects/a-share-etf-quant/scripts/explore_strategies.py:528: UserWarning: Glyph 36164 (\N{CJK UNIFIED IDEOGRAPH-8D44}) missing from font(s) DejaVu Sans.
+  plt.savefig(plot_file, dpi=150, bbox_inches='tight')
+/Users/levy/.openclaw/workspace/projects/a-share-etf-quant/scripts/explore_strategies.py:528: UserWarning: Glyph 37329 (\N{CJK UNIFIED IDEOGRAPH-91D1}) missing from font(s) DejaVu Sans.
+  plt.savefig(plot_file, dpi=150, bbox_inches='tight')
+/Users/levy/.openclaw/workspace/projects/a-share-etf-quant/scripts/explore_strategies.py:528: UserWarning: Glyph 26354 (\N{CJK UNIFIED IDEOGRAPH-66F2}) missing from font(s) DejaVu Sans.
+  plt.savefig(plot_file, dpi=150, bbox_inches='tight')
+/Users/levy/.openclaw/workspace/projects/a-share-etf-quant/scripts/explore_strategies.py:528: UserWarning: Glyph 32447 (\N{CJK UNIFIED IDEOGRAPH-7EBF}) missing from font(s) DejaVu Sans.
+  plt.savefig(plot_file, dpi=150, bbox_inches='tight')
+============================================================
+🔬 A股ETF策略探索与回测
+============================================================
+📂 正在读取数据: /Users/levy/.openclaw/workspace/projects/a-share-etf-quant/data/raw/etf_history_2015_2025.csv
+✅ 总数据: 2916 条记录
+
+📊 ETF列表:
+   共 1 只ETF
+   前5只: [510300]
+⚠️  未找到 510300，使用第一只ETF: 510300
+
+⚙️  计算技术指标...
+✅ 指标计算完成，新增列: ['change', 'ma5', 'ma10', 'ma20', 'ma60', 'ma120', 'ma250', 'rsi', 'bb_middle', 'bb_upper', 'bb_lower', 'bb_bandwidth', 'macd', 'macd_signal', 'macd_hist', 'volume_ma5', 'volume_ma20', 'volume_ratio', 'atr', 'atr_ratio']
+
+✂️  划分训练集/测试集...
+📚 训练集: 1827 天 (2015-01-01 ~ 2021-12-31)
+🔬 测试集: 1089 天 (2022-01-03 ~ 2026-03-05)
+
+🏋️  训练集策略回测（2015-2021）:
+
+🧪 测试策略: MA Cross
+  总收益: 1.03%, 夏普: -1.13, 最大回撤: -4.25%
+
+🧪 测试策略: MA Double
+  总收益: -2.36%, 夏普: -1.47, 最大回撤: -7.32%
+
+🧪 测试策略: MA Triple
+  总收益: 0.42%, 夏普: -1.52, 最大回撤: -4.64%
+
+🧪 测试策略: MACD Cross
+  总收益: -0.38%, 夏普: -1.23, 最大回撤: -5.77%
+
+🧪 测试策略: MACD Hist
+  总收益: -0.38%, 夏普: -1.23, 最大回撤: -5.77%
+
+🧪 测试策略: RSI Extreme
+  总收益: -1.05%, 夏普: -1.50, 最大回撤: -4.08%
+
+🧪 测试策略: MA+RSI Combo
+  总收益: 0.90%, 夏普: -1.70, 最大回撤: -1.79%
+
+🧪 测试策略: Bollinger Band
+  总收益: 0.52%, 夏普: -1.46, 最大回撤: -2.95%
+
+🧪 测试策略: Bollinger Squeeze
+  总收益: 0.00%, 夏普: -46468703579132608.00, 最大回撤: 0.00%
+
+🧪 测试策略: Volume Confirm
+  总收益: -2.29%, 夏普: -1.55, 最大回撤: -7.16%
+
+🧪 测试策略: TA Confluence
+  总收益: -1.62%, 夏普: -1.68, 最大回撤: -5.41%
+
+🧪 测试策略: TA Strengthened
+  总收益: -0.15%, 夏普: -3.45, 最大回撤: -2.84%
+
+✅ 策略对比完成，结果保存至: /Users/levy/.openclaw/workspace/projects/a-share-etf-quant/results/strategy_comparison.csv
+
+🏆 选择最佳策略（按总收益）:
+  最佳策略: MA Cross
+  训练集总收益: 1.03%
+
+🔬 测试集验证（2022-2025）:
+  测试集总收益: 4.14%
+  年化收益: 0.98%
+  最大回撤: -2.44%
+  夏普比率: -0.59
+  交易次数: 50
+
+📈 资金曲线已保存: /Users/levy/.openclaw/workspace/projects/a-share-etf-quant/results/test_equity_curve.png
+
+✅ 策略探索完成！
+📁 结果目录: /Users/levy/.openclaw/workspace/projects/a-share-etf-quant/results

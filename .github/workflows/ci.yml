@@ -1,0 +1,264 @@
+name: Quant Trading System CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  # Job 1: Code quality and security audit
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Security Audit
+      run: |
+        python3 scripts/security_audit.py --fail-on-high
+      env:
+        # 如果有环境变量需求可在此设置
+        CLAW_STREET_URL: ${{ secrets.CLAW_STREET_URL }}
+    
+    - name: Upload security report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-audit-report
+        path: security/audit_report_*.txt
+        retention-days: 30
+
+  # Job 2: Unit tests and syntax check
+  test:
+    runs-on: ubuntu-latest
+    needs: security
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Syntax check all Python files
+      run: |
+        python3 -m py_compile scripts/backtester.py
+        python3 -m py_compile scripts/explore_strategies.py
+        python3 -m py_compile scripts/strategies.py
+        python3 -m py_compile scripts/fetch_etf_universe.py
+        python3 -m py_compile scripts/parameter_sweep.py
+        python3 -m py_compile scripts/generate_signals.py
+        python3 -m py_compile scripts/daily_update.py
+        python3 -m py_compile scripts/benchmark.py
+        python3 -m py_compile scripts/security_audit.py
+        python3 -m py_compile virtual_account.py
+        python3 -m py_compile clients/claw_street_client.py
+        python3 -m py_compile dashboard/sim_trader.py
+        python3 -m py_compile scripts/monitoring/alert.py
+        echo "✅ All Python files syntax OK"
+    
+    - name: Import test all modules
+      run: |
+        python3 << 'EOF'
+        import sys
+        sys.path.insert(0, '.')
+        modules = [
+            'scripts.backtester',
+            'scripts.explore_strategies',
+            'scripts.strategies',
+            'scripts.fetch_etf_universe',
+            'scripts.parameter_sweep',
+            'scripts.generate_signals',
+            'scripts.daily_update',
+            'scripts.benchmark',
+            'scripts.security_audit',
+            'virtual_account',
+            'clients.claw_street_client',
+            'dashboard.sim_trader',
+            'scripts.monitoring.alert'
+        ]
+        failed = []
+        for mod in modules:
+            try:
+                __import__(mod)
+                print(f"✅ {mod}")
+            except Exception as e:
+                print(f"❌ {mod}: {e}")
+                failed.append(mod)
+        if failed:
+            print(f"Failed modules: {failed}")
+            exit(1)
+        print("All modules imported successfully!")
+        EOF
+    
+    - name: Run small backtest (smoke test)
+      run: |
+        python3 << 'EOF'
+        import pandas as pd
+        import numpy as np
+        from scripts.backtester import Backtester
+        from scripts.strategies import get_strategy, calculate_all_indicators
+        
+        # Create minimal test data
+        dates = pd.date_range('2024-01-01', periods=30, freq='D')
+        np.random.seed(42)
+        close = 100 + np.random.randn(30).cumsum() * 0.5
+        data = pd.DataFrame({
+            'date': dates,
+            'open': close - np.random.rand(30),
+            'high': close + np.random.rand(30) * 0.5,
+            'low': close - np.random.rand(30) * 0.5,
+            'close': close,
+            'volume': np.random.randint(1000, 5000, 30),
+            'pct_change': np.random.randn(30) * 0.5
+        })
+        data = calculate_all_indicators(data)
+        
+        # Test 1: Run backtest with one strategy
+        bt = Backtester(data, initial_capital=100000)
+        strategy = get_strategy('turtle')
+        results = bt.run(data, strategy)
+        metrics = bt.evaluate()
+        
+        assert len(results) == len(data), "Results length mismatch"
+        assert 'total_assets' in results.columns, "Missing total_assets column"
+        assert metrics['final_assets'] > 0, "Invalid final assets"
+        
+        print("✅ Backtest smoke test passed")
+        print(f"  - Final assets: {metrics['final_assets']:.2f}")
+        print(f"  - Total trades: {metrics['total_trades']}")
+        EOF
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: results/
+        retention-days: 7
+
+  # Job 3: Documentation check
+  docs:
+    runs-on: ubuntu-latest
+    needs: [security, test]
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check markdown files
+      run: |
+        # Count markdown files
+        md_files=$(find docs -name "*.md" | wc -l)
+        echo "Found $md_files markdown files in docs/"
+        if [ "$md_files" -lt 4 ]; then
+          echo "❌ Expected at least 4 markdown files in docs/"
+          exit 1
+        fi
+        echo "✅ Documentation files check passed"
+    
+    - name: Validate docs structure
+      run: |
+        required_files=("README.md" "architecture.md" "deployment.md" "strategy_guide.md")
+        for file in "${required_files[@]}"; do
+          if [ ! -f "docs/$file" ]; then
+            echo "❌ Missing docs/$file"
+            exit 1
+          fi
+        done
+        echo "✅ All required documentation files present"
+    
+    - name: Upload docs
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: docs/
+        retention-days: 30
+
+  # Job 4: Performance benchmark (optional)
+  benchmark:
+    runs-on: ubuntu-latest
+    needs: [security, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run benchmark (small scale)
+      run: |
+        echo "Running benchmark..."
+        python3 scripts/benchmark.py --etfs 3 --strategies 2 || echo "Benchmark completed with warnings"
+      env:
+        # Limit to small dataset for CI
+        BENCHMARK_ETFS: "3"
+        BENCHMARK_STRATEGIES: "2"
+    
+    - name: Upload benchmark results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-results
+        path: results/benchmark_*.txt
+        retention-days: 7
+
+  # Job 5: PR comment with summary (only for PRs)
+  pr-summary:
+    runs-on: ubuntu-latest
+    needs: [security, test, docs]
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Generate PR summary
+      run: |
+        echo "## 📊 CI Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Security audit passed" >> $GITHUB_STEP_SUMMARY
+        echo "✅ All modules importable" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Backtest smoke test passed" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Documentation complete" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📈 Files changed" >> $GITHUB_STEP_SUMMARY
+        git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY || true
+
+  # Notify on failure (optional)
+  notify:
+    runs-on: ubuntu-latest
+    needs: [security, test, docs, benchmark]
+    if: always() && (needs.security.result == 'failure' || needs.test.result == 'failure')
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Send failure notification
+      run: |
+        echo "CI pipeline failed for ${{ github.repository }} commit ${{ github.sha }}"
+        echo "Check the Actions tab for details."
+        # Here you could send to Feishu/DingTalk/Slack
+      env:
+        FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
