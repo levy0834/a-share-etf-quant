@@ -588,18 +588,16 @@ if __name__ == "__main__":
     print("示例 2: 真实 API（注释掉以避免实际调用）")
     """
     import os
-    api_key = os.getenv('CLAW_STREET_API_KEY')
+    api_key = os.getenv('SERVICE_ACCESS_CODE')  # 生产环境设置此环境变量
     if api_key:
         client = ClawStreetClient(api_key=api_key)
-
         try:
             account = client.get_account()
             print(f"账户信息: {account}")
-
             positions = client.get_positions()
             print(f"持仓: {positions}")
         except Exception as e:
             print(f"错误: {e}")
     else:
-        print("未设置 CLAW_STREET_API_KEY 环境变量")
+        print("未设置服务访问码环境变量")
     """
