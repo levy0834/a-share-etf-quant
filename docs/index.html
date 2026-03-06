@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="0;url=analysis.html">
+    <title>A股ETF量化交易系统 - 看板</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        h1 { margin-bottom: 20px; }
+        a { color: #fff; font-weight: bold; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 A股ETF量化交易系统</h1>
+        <p>正在跳转到看板...</p>
+        <p>如果没有自动跳转，请点击：<a href="analysis.html">查看策略回测看板</a></p>
+    </div>
+    <script>
+        // 如果浏览器不支持自动跳转，显示链接
+        if (!window.location.replace) {
+            document.querySelector('p a').style.display = 'inline';
+        } else {
+            window.location.replace('analysis.html');
+        }
+    </script>
+</body>
+</html>
