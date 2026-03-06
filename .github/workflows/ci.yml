@@ -112,6 +112,9 @@ jobs:
     - name: Run small backtest (smoke test)
       run: |
         python3 << 'EOF'
+        import sys
+        import os
+        sys.path.insert(0, '.')
         import pandas as pd
         import numpy as np
         from scripts.backtester import Backtester

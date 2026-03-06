@@ -13,25 +13,27 @@ from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import pandas as pd
 
-# 配置路径
-WORKSPACE = "/Users/levy/.openclaw/workspace"
-PROJECT_DIR = os.path.join(WORKSPACE, "projects", "a-share-etf-quant")
-sys.path.insert(0, os.path.join(PROJECT_DIR, "scripts"))
+# 配置路径 - 自动检测项目根目录
+SCRIPT_DIR = Path(__file__).parent.resolve()
+PROJECT_DIR = SCRIPT_DIR.parent
+sys.path.insert(0, str(PROJECT_DIR / "scripts"))
 
-from explore_strategies import Backtester, calculate_indicators, strategy_ma_cross, strategy_rsi_extreme
+from explore_strategies import Backtester, calculate_indicators_vectorized, strategy_ma_cross, strategy_rsi_extreme
 
-DAY_DIR = os.path.join(PROJECT_DIR, "data", "day")
-RESULTS_DIR = os.path.join(PROJECT_DIR, "results")
+# 后面使用 calculate_indicators_vectorized 替代
+
+DAY_DIR = PROJECT_DIR / "data" / "day"
+RESULTS_DIR = PROJECT_DIR / "results"
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 def load_etf_list(limit: int = 10) -> list:
     """加载前N个ETF数据文件路径"""
-    if not os.path.exists(DAY_DIR):
+    if not DAY_DIR.exists():
         return []
     
     csv_files = [f for f in os.listdir(DAY_DIR) if f.endswith('.csv')]
     csv_files.sort()  # 按文件名排序保证一致性
-    return [os.path.join(DAY_DIR, f) for f in csv_files[:limit]]
+    return [DAY_DIR / f for f in csv_files[:limit]]
 
 def load_etf_data(csv_path: str) -> pd.DataFrame:
     """加载单个ETF数据"""
